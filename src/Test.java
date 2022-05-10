@@ -32,9 +32,9 @@ public class Test {
         FiniteAutomata finiteAutomata1 = new FiniteAutomata(inputChars,initialState,finalStates1,transitionTable1);
         FiniteAutomata finiteAutomata2 = new FiniteAutomata(inputChars,initialState,finalStates2,transitionTable2);
         FiniteAutomata finiteAutomataNull =  new FiniteAutomata(inputChars,initialState,finalStatesNull,transitionTableForNull);
-        FiniteAutomata sumAutomata = FiniteAutomata.unionAutomatas(finiteAutomata1,finiteAutomata2);
+        FiniteAutomata sumAutomata = FiniteAutomata.union(finiteAutomata1,finiteAutomata2);
 
-        FiniteAutomata closure = FiniteAutomata.unionAutomatas(finiteAutomata1,finiteAutomataNull);
+        FiniteAutomata closure = FiniteAutomata.union(finiteAutomata1,finiteAutomataNull);
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("either the length of a's is divisible by 3, or ends with b.");
