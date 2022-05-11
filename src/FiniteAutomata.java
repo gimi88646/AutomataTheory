@@ -1,10 +1,6 @@
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import java.lang.reflect.Array;
-import java.nio.file.LinkPermission;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 import java.util.InputMismatchException;
 
@@ -260,6 +256,96 @@ public class FiniteAutomata {
 
     public static FiniteAutomata intersect(FiniteAutomata fa1,FiniteAutomata fa2){
         return unionIntersection(fa1,fa2,false);
+    }
+
+    public static FiniteAutomata closure(FiniteAutomata fa){
+        ArrayList<int[]> tempTT = new ArrayList<>();
+        char[] allowedChars = fa.allowedChars;
+        ArrayList<ArrayList<Integer>> zStates = new ArrayList<>();
+        ArrayList<Integer> tempFinalStates = new ArrayList<>();
+        ArrayList<Integer> newState;
+
+        ArrayList<Integer> state = new ArrayList<>();
+        state.add(fa.initialState);
+        zStates.add(state);
+        tempFinalStates.add(fa.initialState);
+
+
+        int z = 0;
+        while (z<zStates.size()){
+            state = zStates.get(z);
+            int[] transitions = new int[allowedChars.length];
+            for (int ci = 0;ci< allowedChars.length; ci++ ){
+                newState = new ArrayList<>();
+                for (int x = 0;x<state.size();x++){
+                    int xState = state.get(x);
+                    int xNewState = fa.transitionTable[xState][ci];
+                    // check uniqueness
+                    boolean found = false;
+                    for (int xInNewState:newState) {
+                        if (xInNewState == xNewState)
+                            found = true;
+                    }
+                    if (!found)
+                    newState.add(xNewState);
+                }
+
+                // check the uniqueness of the newState
+                // if isUnique add the states
+                boolean isUnique = false;
+                boolean matches;
+                int zi = 1;
+                for (; zi < zStates.size(); zi++ ) {
+
+                    ArrayList<Integer> zState = zStates.get(zi);
+
+                    isUnique = true;
+
+                    if (zState.size() == newState.size()) {
+
+                        isUnique = false;
+                        for (int yNew = 0; yNew < newState.size(); yNew++){
+
+
+                            matches = false;
+                            for (int yOld = 0; yOld < zState.size(); yOld++){
+
+                                if (newState.get(yNew)==zState.get(yOld)){
+                                    matches = true;
+                                    break;
+                                }
+                            }
+                            // for at least one element, if throughout the loop, "matches" is never set, implies the state is unique.
+                            if (!matches){
+                                isUnique = true;
+                                break;
+                            }
+                        }
+                        //for any state, if throughout the loop "isUnique" is never set, implies there exists a "zState" equivalent to "newState".
+                        if ( !isUnique )
+                            break;
+                    }
+                }
+                if (isUnique){
+                    zStates.add(newState);
+                }
+                tempFinalStates.add(zi);
+                transitions[ci] =zi;
+            }
+            tempTT.add(transitions);
+            z++;
+        }
+        // conversions
+        int[][] transitionTable = new int[tempTT.size()][allowedChars.length];
+        int[] finalStates = new int[tempFinalStates.size()];
+        for (int i =0; i< transitionTable.length;i++){
+            transitionTable[i] = tempTT.get(i);
+        }
+        for (int i = 0; i < finalStates.length;i++){
+            finalStates[i]  = tempFinalStates.get(i);
+        }
+
+        return new FiniteAutomata(allowedChars,0,finalStates,transitionTable);
     }
 
     public static void complement(FiniteAutomata fa) {
