@@ -38,12 +38,11 @@ public class FiniteAutomata {
         this.transitionTable= transitionTable;
     }
 
-    public FiniteAutomata(){}
+    private FiniteAutomata(){}
 
     public boolean validate(String word){
         int currentState = initialState;
         for(char ch :word.toCharArray()){
-            System.out.println("inside char loop.");
             boolean exists = false;
             //check if the character exist in allowedChars
             int i =0;
@@ -59,12 +58,10 @@ public class FiniteAutomata {
         }
         //check if the current state is in set of final states
         for(int finalState: finalStates) {
-            System.out.println(finalState+" final state");
             if(currentState ==finalState){
                 return true;
             }
         }
-        System.out.println("current State:"+ currentState);
         return false;
     }
 
@@ -104,6 +101,12 @@ public class FiniteAutomata {
                     int yState = state.get(i);
                     int yNewState = faY.transitionTable[yState][i];
                     // before adding new state check for the uniqueness
+                    boolean found = false;
+                    for (int yi = 1 ;yi<newState.size();yi++) {
+                        if (newState.get(yi) == xNewState)
+                            found = true;
+                    }
+                    if (!found)
                     newState.add(yNewState);
                 }
                 // check the uniqueness of the newState
@@ -170,7 +173,7 @@ public class FiniteAutomata {
         // Applied DRY principle because the union and intersection have the same code except for 1 line
 
         // task is to develop a transition table and set of final states for the resultant automata.
-        int[][] transitionTable;
+        int[][] transitionTable; // initialized later
         ArrayList<Integer> tempFinalStates = new ArrayList<>();
         char[] allowedChars=fa1.allowedChars;
         ArrayList<int[]> tempTT = new ArrayList<>();
@@ -232,15 +235,19 @@ public class FiniteAutomata {
                         }
                     }
                 }
+                // z transitions for every char in allowed characters
+                // i is the index for z state
                 transitions[j] = i;
             }
             tempTT.add(transitions);
             CS++;
         }
+
         transitionTable = new int[tempTT.size()][allowedChars.length];
         for(int s = 0; s < transitionTable.length; s++){
             transitionTable[s] = tempTT.get(s);
         }
+
         int[] finalStates = new int[tempFinalStates.size()];
         for(int k = 0;k<finalStates.length;k++){
             finalStates[k] = tempFinalStates.get(k);
@@ -259,6 +266,7 @@ public class FiniteAutomata {
     }
 
     public static FiniteAutomata closure(FiniteAutomata fa){
+
         ArrayList<int[]> tempTT = new ArrayList<>();
         char[] allowedChars = fa.allowedChars;
         ArrayList<ArrayList<Integer>> zStates = new ArrayList<>();
@@ -268,7 +276,7 @@ public class FiniteAutomata {
         ArrayList<Integer> state = new ArrayList<>();
         state.add(fa.initialState);
         zStates.add(state);
-        tempFinalStates.add(fa.initialState);
+        tempFinalStates.add(0);
 
 
         int z = 0;
@@ -286,12 +294,35 @@ public class FiniteAutomata {
                         if (xInNewState == xNewState)
                             found = true;
                     }
-                    if (!found)
-                    newState.add(xNewState);
+                    if (!found){
+                        newState.add(xNewState);
+                        if (fa.belongsToFinal(xNewState)){
+                            // add the initial state as well
+
+                            found = false;
+                            for(Integer finalState:tempFinalStates) {
+                                if (finalState == xNewState){
+                                    found = true;
+                                }
+                            }
+                            if (!found){
+                                tempFinalStates.add(xNewState);
+                            }
+
+                            found = false;
+                            for (Integer s :newState){
+                                if (s == fa.initialState){
+                                    found =true;
+                                }
+                            }
+                            if (!found)
+                                newState.add(fa.initialState);
+                        }
+                    }
                 }
 
                 // check the uniqueness of the newState
-                // if isUnique add the states
+                // if isUnique add the state
                 boolean isUnique = false;
                 boolean matches;
                 int zi = 1;
@@ -329,7 +360,6 @@ public class FiniteAutomata {
                 if (isUnique){
                     zStates.add(newState);
                 }
-                tempFinalStates.add(zi);
                 transitions[ci] =zi;
             }
             tempTT.add(transitions);
@@ -354,12 +384,12 @@ public class FiniteAutomata {
         int[] finalStates_ = new int[transitionTable.length - finalStates.length];
         int fi = 0;
         for (int i = 0;i<transitionTable.length;i++){
-            // if i belongs to finalStates don't add it
+            // if "i" belongs to finalStates don't add it
             int k = 0;
             for (;k<finalStates.length;k++){
                 if (i==finalStates_[k]) break;
             }
-            //  i == finalStates.length implies i is not in finalStates
+            //  i == finalStates.length implies "i" is not in finalStates
             if (k != finalStates.length ) continue;
             finalStates_[fi] = i;
             fi++;

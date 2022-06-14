@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Test {
@@ -33,8 +34,13 @@ public class Test {
         FiniteAutomata finiteAutomata2 = new FiniteAutomata(inputChars,initialState,finalStates2,transitionTable2);
         FiniteAutomata finiteAutomataNull =  new FiniteAutomata(inputChars,initialState,finalStatesNull,transitionTableForNull);
         FiniteAutomata sumAutomata = FiniteAutomata.union(finiteAutomata1,finiteAutomata2);
+        FiniteAutomata closured = FiniteAutomata.closure(finiteAutomata1);
+        //FiniteAutomata.kleensClosure(finiteAutomata1);
 
-        FiniteAutomata closure = FiniteAutomata.union(finiteAutomata1,finiteAutomataNull);
+        FiniteAutomata unioned = FiniteAutomata.union(finiteAutomata1,finiteAutomataNull);
+
+        ArrayList<int[]> unionStates = new ArrayList<>();
+        unionStates.add(new int[]{0,1});
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("either the length of a's is divisible by 3, or ends with b.");
@@ -42,7 +48,7 @@ public class Test {
         while(true){
             System.out.print("Enter a word: ");
             input = scanner.nextLine();
-            System.out.println(closure.validate(input));
+            System.out.println(finiteAutomata1.validate(input));
         }
     }
 }
